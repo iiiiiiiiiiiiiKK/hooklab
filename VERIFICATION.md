@@ -8,7 +8,7 @@ suite source in [`tests/`](tests) / [`scripts/verify-ui.mjs`](scripts/verify-ui.
 Date of run: 2026-10-25 · Worker version deployed from `main` · Compatibility date `2025-09-01`.
 
 Continuous integration: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs type check, unit tests,
-production build and a worker dry-run bundle on every push to `main`. Latest run: **CI #2 — success**.
+production build and a worker dry-run bundle on every push to `main`. Latest run: **CI #4 — success**.
 
 ---
 
@@ -18,17 +18,18 @@ production build and a worker dry-run bundle on every push to `main`. Latest run
 | --- | --- | --- |
 | Dependency install | `npm install` | ✅ 101 packages, no audit errors |
 | TypeScript strict build | `npx tsc -b` | ✅ 0 errors (strict, `noUnusedLocals`, `noUncheckedSideEffectImports`) |
-| Production build | `npx vite build` | ✅ `dist/` 285.95 kB JS (86.25 kB gzip), 15.96 kB CSS (4.41 kB gzip) |
+| Production build | `npx vite build` | ✅ `dist/` 319.20 kB JS (96.86 kB gzip), 17.28 kB CSS (4.71 kB gzip) |
 | Worker bundle | `wrangler deploy` | ✅ 79 KiB upload, 20.25 KiB gzip, 6 ms startup |
 
 ## 2. Unit tests (`node --test`)
 
-**19/19 passing**, 0 failing.
+**24/24 passing**, 0 failing.
 
 | File | Covers |
 | --- | --- |
 | `tests/ssrf.test.mjs` | IPv4 parsing (dotted/decimal/hex/octal), IPv6 expansion incl. `::ffff:` and NAT64, blocked ranges, scheme/credential/port rejection, single-label hosts, `ALLOWED_REPLAY_HOSTS` |
 | `tests/util.test.mjs` | Token & slug entropy (500 unique of each), SHA-256 hashing, sensitive-header redaction, body classification (json/form/text/binary/empty), base64 round-trip, streaming byte cap when `Content-Length` lies, name sanitising, integer clamping |
+| `tests/i18n.test.mjs` | EN/ZH key parity, no empty messages, placeholder ({var}) parity across locales, every API error code the client can surface has a translated message |
 
 ## 3. End-to-end API verification from a different network
 
@@ -89,7 +90,7 @@ Additional redirect-level checks (stage 4):
 
 ## 4. Browser verification (Playwright, production)
 
-**45/45 checks passing.** Two viewports per run: desktop 1440×900 and iPhone 390×844 (DPR 3, touch, iOS UA).
+**61/61 checks passing.** Two viewports per run: desktop 1440×900 and iPhone 390×844 (DPR 3, touch, iOS UA).
 
 | Area | Checks | Result |
 | --- | --- | --- |
@@ -111,6 +112,19 @@ Additional redirect-level checks (stage 4):
 
 Screenshots in [`screenshots/`](screenshots) are produced by this run. The settings screenshot has the live
 token masked in the DOM before capture.
+
+### 4.1 Narrow-phone check (`scripts/check-narrow.mjs`)
+
+**14/14 passing.** 320×720, DPR 2, mobile UA, run once per language:
+
+| Check | Result |
+| --- | --- |
+| No document overflow, header stays inside the viewport | ✅ both languages |
+| Nav does not overflow its own box (152 px of 152 px) | ✅ both languages |
+| 𝕏 author link still visible at 320 px | ✅ |
+| All tap targets ≥ 28 px tall | ✅ |
+| `data-lang` applied before first paint (`en`, `zh`) | ✅ |
+| No page errors | ✅ |
 
 ## 5. Security review
 
