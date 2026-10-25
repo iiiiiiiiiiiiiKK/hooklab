@@ -9,6 +9,8 @@ explicitly type, with SSRF protection applied on every hop.
 
 <p align="center">
   <a href="https://hooklab.852367856.dpdns.org"><strong>🔗 Live demo »</strong></a>
+  &nbsp;·&nbsp;
+  <a href="VERIFICATION.md"><strong>✅ Verification report »</strong></a>
 </p>
 
 <p align="center">
@@ -16,6 +18,7 @@ explicitly type, with SSRF protection applied on every hop.
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=0b0f19" />
   <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=white" />
   <img alt="D1" src="https://img.shields.io/badge/D1-SQLite-003b57?logo=sqlite&logoColor=white" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-19%20unit%20%C2%B7%2045%20browser%20%C2%B7%2050%20edge-8b5cf6" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-8b5cf6" />
 </p>
 
@@ -321,8 +324,10 @@ Error codes you can rely on: `invalid_target`, `blocked_target`, `blocked_port`,
 | Replay rate | 20/min and 200/day per endpoint | fixed-window counters |
 | Endpoint creation | 20/day per IP hash | fixed-window counter |
 
-Expired rows are deleted opportunistically on writes, expired endpoints stop accepting traffic immediately, and
-endpoints keep nothing after deletion. Rate-limit windows older than six hours are swept too.
+Expired rows are hidden from every read immediately and deleted by a sweep that runs inline on traffic plus a
+scheduled Cron Trigger (`triggers.crons` in `wrangler.jsonc`, every 6 hours) so idle deployments do not accumulate
+data. Expired endpoints stop accepting traffic at once. Endpoints keep nothing after deletion, and rate-limit
+windows older than six hours are swept too.
 
 ## Security model
 
@@ -386,6 +391,20 @@ Attach a custom domain (Workers → your worker → Settings → Domains & Route
 storage — HookLab's per-endpoint quotas keep it well inside those limits, but **they are platform limits, not a
 promise of unlimited free service**.
 
+> **Note on `*.workers.dev`:** the demo runs on the custom domain `hooklab.852367856.dpdns.org` because
+> `*.workers.dev` was unreachable from the network this build machine sits on. If the workers.dev host name times
+> out for you, attach your own domain — that is a network/ISP issue, not an application one.
+
+### Deploying without git push access
+
+If `git push` to GitHub is blocked by the network but the REST API is reachable, `scripts/push-to-github.mjs`
+mirrors the tracked tree through the API (blobs → tree → commit → ref move):
+
+```bash
+GH_TOKEN=... REPO_ROOT=$PWD GITHUB_REPO=owner/hooklab COMMIT_MESSAGE="feat: ..." \
+  node scripts/push-to-github.mjs
+```
+
 ### Vercel / other platforms
 
 HookLab is built on Workers primitives (D1 binding, `env.ASSETS`), so it is **not** a drop-in Vercel app. Porting
@@ -412,8 +431,11 @@ hooklab/
 │   └── util.js              # tokens, hashing, body analysis, rate limits
 ├── migrations/0001_init.sql # D1 schema
 ├── tests/                   # node:test unit tests (+ edge probe used for verification)
-├── scripts/verify-ui.mjs    # Playwright E2E + screenshot pipeline
-└── wrangler.jsonc           # Worker, assets and D1 bindings
+├── scripts/
+│   ├── verify-ui.mjs        # Playwright E2E + screenshot pipeline
+│   └── push-to-github.mjs   # REST-API publisher (fallback when git push is blocked)
+├── .github/workflows/ci.yml # type check, unit tests, build, worker dry-run
+└── wrangler.jsonc           # Worker, assets, D1 bindings and the cleanup cron
 ```
 
 ## Known limitations
@@ -426,13 +448,13 @@ hooklab/
   small (HookLab's writes are tiny rows).
 - **Binary previews are base64.** Deliberate: no content sniffing, no HTML execution.
 - **`workers.dev` may be unreachable from some networks.** Use a custom domain (the live demo does).
-- **No automated expiry cron.** Cleanup is opportunistic on traffic; idle expired data is removed the next time
-  the endpoint is touched, and is already invisible once expired.
+- **Cleanup is batched.** The sweep deletes at most 100 expired rows per run to stay inside Worker CPU limits;
+  a large backlog clears over a few invocations. Expired rows are already invisible to every read.
 - **Not multi-tenant.** No organisations, roles or audit log.
 
 ## Roadmap
 
-- [ ] Optional scheduled cleanup via Cron Triggers for idle accounts
+- [x] Scheduled cleanup via Cron Triggers (every 6 h)
 - [ ] SSE push as an opt-in alternative to polling
 - [ ] Signature verification helpers (Stripe, GitHub, Shopify)
 - [ ] Saved replay profiles per endpoint

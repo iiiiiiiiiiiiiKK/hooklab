@@ -7,6 +7,9 @@ suite source in [`tests/`](tests) / [`scripts/verify-ui.mjs`](scripts/verify-ui.
 
 Date of run: 2026-10-25 · Worker version deployed from `main` · Compatibility date `2025-09-01`.
 
+Continuous integration: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs type check, unit tests,
+production build and a worker dry-run bundle on every push to `main`. Latest run: **CI #2 — success**.
+
 ---
 
 ## 1. Build and static checks
@@ -127,9 +130,10 @@ returns no matches outside the intentional redaction tests and README examples.
 
 ## 6. What is *not* verified / known gaps
 
-- No automated expiry **cron** was exercised in production beyond confirming the schedule is registered
-  (`schedule: 17 */6 * * *`) and that the same sweep function runs inline on traffic. The behaviour was verified
-  by forcing `expires_at` into the past.
+- The scheduled Cron Trigger (`schedule: 17 */6 * * *`) is registered on the Worker and shares the exact sweep
+  function that is exercised inline, but the cron firing itself has not been observed yet (it fires a few times a
+  day). Sweep behaviour was verified deterministically by forcing `expires_at` into the past: reads returned 0
+  rows, status reported `expired`, and the DB row count went `1 → 0`.
 - No load test beyond the rate-limit burst (≈70 requests). Cloudflare free-plan ceiling (100k req/day, 10 ms CPU)
   was not saturated.
 - Binary upload is verified by classification and base64 storage in unit tests, not by a browser upload flow.
