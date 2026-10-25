@@ -1,3 +1,9 @@
+<div align="right">
+
+**English** · [简体中文](README.zh-CN.md)
+
+</div>
+
 # HookLab
 
 > **A webhook lab for developers: capture, inspect and replay HTTP requests at a real public URL.**
@@ -478,6 +484,20 @@ key is a TypeScript error and a missing translation is caught by `tests/i18n.tes
 
 Adding a language: add a `Lang` member, a dictionary typed as `Record<TextKey, string>`, and an entry in
 `LOCALES` — the compiler lists every key you still need to translate.
+
+### Documentation
+
+This README and its Chinese counterpart are maintained side by side:
+
+| File | Language |
+| --- | --- |
+| [`README.md`](README.md) | English (default) |
+| [`README.zh-CN.md`](README.zh-CN.md) | 简体中文 |
+
+Both open with a language link at the top. `tests/readme.test.mjs` keeps them honest: it asserts that the two
+files cover the same set of section headings, that both carry the live URL and the 𝕏 author link, and that
+neither documents a feature the other omits. When you add a section to one, add it to the other or the unit
+tests fail.
 
 ## Known limitations
 
