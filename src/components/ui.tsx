@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { copyText, methodTone, statusTone } from "../format";
+import { useI18n } from "../i18n";
 
 /* ------------------------------------------------------------------ toasts */
 
@@ -49,22 +50,26 @@ export function useToast() {
 
 export function CopyButton({
   value,
-  label = "Copy",
+  label,
   size = "sm",
   title,
+  testId,
 }: {
   value: string;
   label?: string;
   size?: "sm" | "md";
   title?: string;
+  testId?: string;
 }) {
+  const { t } = useI18n();
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   const toast = useToast();
+  const text = label ?? t("common.copy");
 
   async function onClick() {
     const ok = await copyText(value);
     setState(ok ? "ok" : "fail");
-    if (!ok) toast("Clipboard is blocked by the browser. Select the text and copy manually.", "error");
+    if (!ok) toast(t("common.clipboardBlocked"), "error");
     window.setTimeout(() => setState("idle"), 1600);
   }
 
@@ -73,11 +78,14 @@ export function CopyButton({
       type="button"
       className={`btn ${size === "sm" ? "btn-sm" : ""} btn-ghost`}
       onClick={onClick}
-      title={title || "Copy to clipboard"}
-      aria-label={title || label}
+      title={title || t("common.copyTitle")}
+      aria-label={title || text}
+      data-test={testId}
     >
       <span aria-hidden="true">{state === "ok" ? "✓" : state === "fail" ? "✕" : "⧉"}</span>
-      <span className="copy-label">{state === "ok" ? "Copied" : state === "fail" ? "Failed" : label}</span>
+      <span className="copy-label copy-state">
+        {state === "ok" ? t("common.copied") : state === "fail" ? t("common.failed") : text}
+      </span>
     </button>
   );
 }
@@ -89,17 +97,22 @@ export function MethodChip({ method }: { method: string }) {
 }
 
 export function StatusChip({ code }: { code: number | null | undefined }) {
+  const { t } = useI18n();
   return (
-    <span className={`chip chip-mono ${statusTone(code)}`} title={code ? "HTTP status returned by the target" : "No response"}>
+    <span
+      className={`chip chip-mono ${statusTone(code)}`}
+      title={code ? t("chip.statusTitle") : t("chip.noResponse")}
+    >
       {code ?? "ERR"}
     </span>
   );
 }
 
 export function OriginChip({ origin }: { origin: "captured" | "synthetic" }) {
+  const { t } = useI18n();
   return (
     <span className={`chip ${origin === "captured" ? "chip-captured" : "chip-synthetic"}`}>
-      {origin === "captured" ? "● real request" : "◇ test request"}
+      {origin === "captured" ? t("chip.real") : t("chip.test")}
     </span>
   );
 }
@@ -143,7 +156,7 @@ export function ConfirmModal({
   open,
   title,
   body,
-  confirmLabel = "Confirm",
+  confirmLabel,
   danger,
   busy,
   onCancel,
@@ -158,6 +171,8 @@ export function ConfirmModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -175,11 +190,11 @@ export function ConfirmModal({
         <div className="muted small">{body}</div>
         <div className="modal-actions">
           <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={busy}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button type="button" className={`btn ${danger ? "btn-danger" : "btn-primary"}`} onClick={onConfirm} disabled={busy}>
             {busy ? <span className="spin" aria-hidden="true" /> : null}
-            {confirmLabel}
+            {confirmLabel ?? t("common.confirm")}
           </button>
         </div>
       </div>
@@ -203,6 +218,7 @@ export function EmptyState({ icon, title, hint, action }: { icon?: ReactNode; ti
 }
 
 export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="banner banner-error" role="alert">
       <span aria-hidden="true">⚠</span>
@@ -210,7 +226,7 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
         <div>{message}</div>
         {onRetry ? (
           <button type="button" className="btn btn-sm btn-ghost" style={{ marginTop: 8 }} onClick={onRetry}>
-            Retry
+            {t("common.retry")}
           </button>
         ) : null}
       </div>
@@ -218,11 +234,12 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
   );
 }
 
-export function Loading({ label = "Loading…" }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <div className="row" style={{ padding: "22px 4px", color: "var(--text-dim)", fontSize: 13 }}>
       <span className="spin" aria-hidden="true" />
-      <span>{label}</span>
+      <span>{label ?? t("common.loading")}</span>
     </div>
   );
 }

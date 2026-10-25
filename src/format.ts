@@ -10,16 +10,16 @@ export function formatBytes(bytes: number): string {
   return `${value >= 10 || i === 0 ? Math.round(value) : value.toFixed(1)} ${units[i]}`;
 }
 
-export function formatTime(ts: number | null | undefined): string {
+export function formatTime(ts: number | null | undefined, locale?: string): string {
   if (!ts) return "—";
   const d = new Date(ts);
-  return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-export function formatDateTime(ts: number | null | undefined): string {
+export function formatDateTime(ts: number | null | undefined, locale?: string): string {
   if (!ts) return "—";
   const d = new Date(ts);
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(locale, {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -29,7 +29,7 @@ export function formatDateTime(ts: number | null | undefined): string {
   });
 }
 
-export function formatRelative(ts: number | null | undefined): string {
+export function formatRelative(ts: number | null | undefined, locale?: string): string {
   if (!ts) return "—";
   const diff = ts - Date.now();
   const abs = Math.abs(diff);
@@ -39,7 +39,7 @@ export function formatRelative(ts: number | null | undefined): string {
     [1000 * 60, "minute"],
     [1000, "second"],
   ];
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   for (const [ms, unit] of units) {
     if (abs >= ms || unit === "second") {
       return rtf.format(Math.round(diff / ms), unit);

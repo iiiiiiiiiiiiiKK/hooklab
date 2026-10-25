@@ -1,54 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, ApiError, type EndpointView } from "../api";
+import { api, type EndpointView } from "../api";
 import { sessionStore, type StoredEndpoint } from "../store";
 import { navigate } from "../router";
 import { EmptyState, ErrorBanner, useToast } from "../components/ui";
 import { formatRelative } from "../format";
+import { useI18n, type TextKey } from "../i18n";
 
-const FEATURES = [
-  {
-    icon: "⇥",
-    title: "Real, public HTTPS endpoints",
-    body: "Every endpoint is a live server route — point any provider webhook at it and the request is captured in milliseconds.",
-  },
-  {
-    icon: "⌕",
-    title: "Full-fidelity inspection",
-    body: "Method, path, query, headers, timing and the raw body. JSON is prettified, forms are decoded, binaries are hashed safely.",
-  },
-  {
-    icon: "↻",
-    title: "Safe replay",
-    body: "Replay to a target you type — SSRF-guarded against private IPs, metadata services, DNS rebinding and redirect hops.",
-  },
-  {
-    icon: "⧉",
-    title: "Paste-ready snippets",
-    body: "curl, fetch and Python examples generated for your endpoint, so wiring a provider takes seconds.",
-  },
-  {
-    icon: "◐",
-    title: "Redaction by default",
-    body: "Authorization, Cookie, API keys and signatures are stored as [REDACTED] unless you explicitly opt in.",
-  },
-  {
-    icon: "⏱",
-    title: "Self-destructing data",
-    body: "TTLs, request caps and byte quotas are enforced server-side. Expired rows are swept automatically.",
-  },
+const FEATURE_KEYS: { icon: string; title: TextKey; body: TextKey }[] = [
+  { icon: "⇥", title: "feature.1.title", body: "feature.1.body" },
+  { icon: "⌕", title: "feature.2.title", body: "feature.2.body" },
+  { icon: "↻", title: "feature.3.title", body: "feature.3.body" },
+  { icon: "⧉", title: "feature.4.title", body: "feature.4.body" },
+  { icon: "◐", title: "feature.5.title", body: "feature.5.body" },
+  { icon: "⏱", title: "feature.6.title", body: "feature.6.body" },
 ];
 
-const TTL_OPTIONS = [
-  { label: "1 hour", value: 60 },
-  { label: "6 hours", value: 360 },
-  { label: "24 hours", value: 1440 },
-  { label: "3 days", value: 4320 },
-  { label: "7 days", value: 10080 },
-  { label: "30 days", value: 43200 },
+const TTL_OPTIONS: { key: TextKey; value: number }[] = [
+  { key: "ttl.1h", value: 60 },
+  { key: "ttl.6h", value: 360 },
+  { key: "ttl.24h", value: 1440 },
+  { key: "ttl.3d", value: 4320 },
+  { key: "ttl.7d", value: 10080 },
+  { key: "ttl.30d", value: 43200 },
 ];
 
 export default function LandingPage() {
   const toast = useToast();
+  const { t, locale, errorMessage } = useI18n();
   const [sessions, setSessions] = useState<StoredEndpoint[]>([]);
   const [name, setName] = useState("");
   const [ttlMinutes, setTtlMinutes] = useState(1440);
@@ -81,10 +59,10 @@ export default function LandingPage() {
       });
       setCreated({ endpoint: res.endpoint, token: res.token, ingestUrl: res.ingestUrl });
       setSessions(sessionStore.list());
-      toast("Endpoint created — token saved in this browser only.", "success");
+      toast(t("landing.createdToast"), "success");
       navigate(`/e/${res.endpoint.id}`);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Could not create the endpoint. Please retry.";
+      const message = errorMessage(err) || t("landing.createFailed");
       setError(message);
       toast(message, "error");
     } finally {
@@ -98,22 +76,23 @@ export default function LandingPage() {
     <div className="container">
       <section className="hero">
         <span className="hero-badge">
-          <span className="pulse-dot" aria-hidden="true" /> Live capture service · no signup required
+          <span className="pulse-dot" aria-hidden="true" /> {t("landing.badge")}
         </span>
         <h1>
-          A webhook lab for <span className="grad">requests you can actually see</span>
+          {t("landing.h1a")} <span className="grad">{t("landing.h1b")}</span>
         </h1>
-        <p>
-          HookLab creates a temporary public HTTPS endpoint that records every request it receives — headers, query
-          string, body and timing. Inspect it, copy a ready-made snippet, then replay it to a target you choose. Built
-          for Stripe/GitHub/Shopee-style webhook debugging where “did the payload even arrive?” is the whole question.
-        </p>
+        <p>{t("landing.intro")}</p>
         <div className="hero-actions">
           <a className="btn btn-primary" href="#create">
-            Create an endpoint
+            {t("landing.ctaCreate")}
           </a>
-          <a className="btn btn-ghost" href="https://github.com/iiiiiiiiiiiiiKK/hooklab" target="_blank" rel="noreferrer noopener">
-            ★ Read the source
+          <a
+            className="btn btn-ghost"
+            href="https://github.com/iiiiiiiiiiiiiKK/hooklab"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            {t("landing.ctaSource")}
           </a>
         </div>
       </section>
@@ -121,35 +100,35 @@ export default function LandingPage() {
       <div className="stack">
         <div className="grid-cards" id="create">
           <div className="card" style={{ gridColumn: "span 1" }}>
-            <h2 className="card-title">New endpoint</h2>
+            <h2 className="card-title">{t("landing.newEndpoint")}</h2>
             <p className="card-hint" style={{ marginBottom: 14 }}>
-              The access token is shown once and kept only in this browser.
+              {t("landing.newEndpointHint")}
             </p>
             <form onSubmit={onCreate} className="stack" style={{ gap: 12 }}>
               <label className="field">
-                Label (optional)
+                {t("landing.label")}
                 <input
                   type="text"
                   value={name}
                   maxLength={60}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Stripe checkout test"
+                  placeholder={t("landing.labelPlaceholder")}
                   autoComplete="off"
                 />
               </label>
               <div className="row" style={{ gap: 10, alignItems: "flex-start" }}>
                 <label className="field" style={{ flex: "1 1 130px" }}>
-                  Expires in
+                  {t("landing.expiresIn")}
                   <select value={ttlMinutes} onChange={(e) => setTtlMinutes(Number(e.target.value))}>
                     {TTL_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.key)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="field" style={{ flex: "1 1 130px" }}>
-                  Max requests
+                  {t("landing.maxRequests")}
                   <input
                     type="number"
                     min={1}
@@ -161,22 +140,22 @@ export default function LandingPage() {
               </div>
               <button type="submit" className="btn btn-primary" disabled={busy}>
                 {busy ? <span className="spin" aria-hidden="true" /> : <span aria-hidden="true">+</span>}
-                {busy ? "Creating…" : "Create endpoint"}
+                {busy ? t("landing.creating") : t("landing.create")}
               </button>
               {error ? <ErrorBanner message={error} /> : null}
             </form>
           </div>
 
           <div className="card" style={{ gridColumn: "span 1" }}>
-            <h2 className="card-title">Try it in one command</h2>
+            <h2 className="card-title">{t("landing.snippetTitle")}</h2>
             <p className="card-hint" style={{ marginBottom: 12 }}>
-              After creating an endpoint, paste these with your own id:
+              {t("landing.snippetHint")}
             </p>
             <pre className="code-block wrap">{`curl -X POST ${origin}/h/<your-endpoint-id> \\
   -H 'content-type: application/json' \\
   -d '{"event":"order.paid","amount":4999}'`}</pre>
             <p className="card-hint" style={{ marginTop: 10 }}>
-              Requests appear in the inbox instantly — the console polls the API every 3 seconds.
+              {t("landing.snippetNote")}
             </p>
           </div>
         </div>
@@ -185,21 +164,17 @@ export default function LandingPage() {
           <div className="banner banner-ok" role="status">
             <span aria-hidden="true">✓</span>
             <div>
-              <strong>Endpoint ready.</strong> {created.endpoint.name} — token {created.endpoint.tokenHint} saved
-              locally. Open the console to copy the full URL.
+              <strong>{t("landing.ready")}</strong>{" "}
+              {t("landing.readyBody", { name: created.endpoint.name, hint: created.endpoint.tokenHint })}
             </div>
           </div>
         ) : null}
 
         <section className="stack">
-          <h2 className="section-title">Your endpoints in this browser</h2>
+          <h2 className="section-title">{t("landing.yours")}</h2>
           {sessions.length === 0 ? (
             <div className="card card-tight">
-              <EmptyState
-                icon="⇥"
-                title="No endpoints yet"
-                hint="Create one above. Tokens live in this browser's localStorage, so a different device or a cleared cache cannot open old endpoints."
-              />
+              <EmptyState icon="⇥" title={t("landing.noneTitle")} hint={t("landing.noneHint")} />
             </div>
           ) : (
             <div className="grid-cards">
@@ -212,10 +187,12 @@ export default function LandingPage() {
                   <div className="tiny faint mono" style={{ wordBreak: "break-all" }}>
                     /h/{s.id}
                   </div>
-                  <div className="tiny faint">Created {formatRelative(s.createdAt)}</div>
+                  <div className="tiny faint">
+                    {t("landing.createdAt", { when: formatRelative(s.createdAt, locale) })}
+                  </div>
                   <div className="row" style={{ gap: 8 }}>
                     <button type="button" className="btn btn-sm" onClick={() => navigate(`/e/${s.id}`)}>
-                      Open console
+                      {t("landing.openConsole")}
                     </button>
                     <button
                       type="button"
@@ -223,10 +200,10 @@ export default function LandingPage() {
                       onClick={() => {
                         sessionStore.remove(s.id);
                         setSessions(sessionStore.list());
-                        toast("Endpoint removed from this browser. Server data expires on its own TTL.", "info");
+                        toast(t("landing.forgotten"), "info");
                       }}
                     >
-                      Forget
+                      {t("landing.forget")}
                     </button>
                   </div>
                 </div>
@@ -236,29 +213,29 @@ export default function LandingPage() {
         </section>
 
         <section className="stack">
-          <h2 className="section-title">What you get</h2>
+          <h2 className="section-title">{t("landing.features")}</h2>
           <div className="feature-grid">
-            {FEATURES.map((f) => (
+            {FEATURE_KEYS.map((f) => (
               <div className="feature" key={f.title}>
                 <div className="feature-icon" aria-hidden="true">
                   {f.icon}
                 </div>
-                <h3>{f.title}</h3>
-                <p>{f.body}</p>
+                <h3>{t(f.title)}</h3>
+                <p>{t(f.body)}</p>
               </div>
             ))}
           </div>
         </section>
 
         <section className="stack">
-          <h2 className="section-title">How it works</h2>
+          <h2 className="section-title">{t("landing.how")}</h2>
           <div className="terminal">
             <div className="terminal-bar">
               <span className="terminal-dot" aria-hidden="true" />
               <span className="terminal-dot" aria-hidden="true" />
               <span className="terminal-dot" aria-hidden="true" />
               <span className="tiny faint" style={{ marginLeft: 6, fontFamily: "var(--mono)" }}>
-                hooklab — capture flow
+                {t("landing.terminalTitle")}
               </span>
             </div>
             <div className="terminal-body">

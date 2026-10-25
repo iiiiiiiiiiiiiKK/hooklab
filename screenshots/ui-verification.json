@@ -1,7 +1,7 @@
 {
   "base": "https://hooklab.852367856.dpdns.org",
-  "passed": 45,
-  "total": 45,
+  "passed": 61,
+  "total": 61,
   "results": [
     {
       "name": "[desktop] seed data captured",
@@ -25,6 +25,83 @@
       "ok": true,
       "detail": {
         "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[desktop] language switch is present",
+      "ok": true,
+      "detail": {
+        "count": 2
+      }
+    },
+    {
+      "name": "[desktop] switch to Chinese translates the UI",
+      "ok": true,
+      "detail": {
+        "enHeading": "A webhook lab for requests you can actua",
+        "zhHeading": "给开发者用的 Webhook 实验室， 每个请求都看得见",
+        "htmlLang": "zh-CN"
+      }
+    },
+    {
+      "name": "[desktop] X author link survives the language switch",
+      "ok": true,
+      "detail": {
+        "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[desktop] Chinese landing has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] Chinese inbox has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] Chinese nav labels are translated",
+      "ok": true,
+      "detail": {
+        "zhNavLabels": [
+          "首页",
+          "收件箱",
+          "重放",
+          "设置",
+          "收藏"
+        ]
+      }
+    },
+    {
+      "name": "[desktop] language choice persists",
+      "ok": true,
+      "detail": {
+        "storedLang": "zh"
+      }
+    },
+    {
+      "name": "[desktop] language survives a reload",
+      "ok": true,
+      "detail": {
+        "heading": "给开发者用的 Webhook 实验室， 每个请求都看得见"
+      }
+    },
+    {
+      "name": "[desktop] switch back to English works",
+      "ok": true,
+      "detail": {
+        "heading": "A webhook lab for requests you can actua"
       }
     },
     {
@@ -80,7 +157,7 @@
       "name": "[desktop] SSRF target rejected in the UI",
       "ok": true,
       "detail": {
-        "banner": "⚠\nTarget host \"127.0.0.1\" is a private, loopback or reserved address. (blocked_target)"
+        "banner": "⚠\nTarget host is private, loopback, reserved or a cloud metadata endpoint. Replay refused. (blocked_target)"
       }
     },
     {
@@ -144,14 +221,14 @@
       "name": "[desktop] copied value is the ingest URL",
       "ok": true,
       "detail": {
-        "sample": "https://hooklab.852367856.dpdns.org/h/Wh1oIRLayk"
+        "sample": "https://hooklab.852367856.dpdns.org/h/LvOKc0mNSN"
       }
     },
     {
       "name": "[desktop] deleting a request returns to the inbox",
       "ok": true,
       "detail": {
-        "path": "/e/9b4e2205-8cde-4176-bd63-b3b5a3bfc34f"
+        "path": "/e/53ef7303-7e04-4cce-af2b-3e10bbfec033"
       }
     },
     {
@@ -188,6 +265,60 @@
       "ok": true,
       "detail": {
         "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[iphone] language switch is present",
+      "ok": true,
+      "detail": {
+        "count": 2
+      }
+    },
+    {
+      "name": "[iphone] switch to Chinese translates the UI",
+      "ok": true,
+      "detail": {
+        "enHeading": "A webhook lab for requests you can actua",
+        "zhHeading": "给开发者用的 Webhook 实验室， 每个请求都看得见",
+        "htmlLang": "zh-CN"
+      }
+    },
+    {
+      "name": "[iphone] X author link survives the language switch",
+      "ok": true,
+      "detail": {
+        "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[iphone] Chinese landing has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] language choice persists",
+      "ok": true,
+      "detail": {
+        "storedLang": "zh"
+      }
+    },
+    {
+      "name": "[iphone] language survives a reload",
+      "ok": true,
+      "detail": {
+        "heading": "给开发者用的 Webhook 实验室， 每个请求都看得见"
+      }
+    },
+    {
+      "name": "[iphone] switch back to English works",
+      "ok": true,
+      "detail": {
+        "heading": "A webhook lab for requests you can actua"
       }
     },
     {
@@ -243,7 +374,7 @@
       "name": "[iphone] SSRF target rejected in the UI",
       "ok": true,
       "detail": {
-        "banner": "⚠\nTarget host \"127.0.0.1\" is a private, loopback or reserved address. (blocked_target)"
+        "banner": "⚠\nTarget host is private, loopback, reserved or a cloud metadata endpoint. Replay refused. (blocked_target)"
       }
     },
     {
@@ -325,14 +456,14 @@
       "name": "[iphone] copied value is the ingest URL",
       "ok": true,
       "detail": {
-        "sample": "https://hooklab.852367856.dpdns.org/h/1JBNRt-Plg"
+        "sample": "https://hooklab.852367856.dpdns.org/h/e45FvhmJL4"
       }
     },
     {
       "name": "[iphone] deleting a request returns to the inbox",
       "ok": true,
       "detail": {
-        "path": "/e/e4212bb0-7789-4be8-a72f-9c032a9ddd0c"
+        "path": "/e/733b245f-fe50-41b2-92a3-da1bd1e7ec2a"
       }
     },
     {

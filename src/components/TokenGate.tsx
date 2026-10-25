@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "../router";
 import { CopyButton, ErrorBanner } from "./ui";
+import { useI18n } from "../i18n";
 
 export function TokenGate({
   id,
@@ -11,6 +12,7 @@ export function TokenGate({
   message?: string;
   onSubmit: (token: string) => Promise<boolean>;
 }) {
+  const { t } = useI18n();
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,20 +23,19 @@ export function TokenGate({
     setError(null);
     const ok = await onSubmit(token);
     setBusy(false);
-    if (!ok) setError("That token was rejected for this endpoint. Check that you copied the full hl_… string.");
+    if (!ok) setError(t("gate.rejected"));
   }
 
   return (
     <div className="container container-narrow">
       <div className="card stack">
-        <h1 className="endpoint-title">Access token required</h1>
+        <h1 className="endpoint-title">{t("gate.title")}</h1>
         <p className="muted small" style={{ margin: 0 }}>
-          {message ||
-            `Endpoint ${id} is not stored in this browser. HookLab keeps only a hash of each token on the server, so the token must come from you.`}
+          {message ? message : t("gate.body", { id })}
         </p>
         <form onSubmit={submit} className="stack" style={{ gap: 12 }}>
           <label className="field">
-            Endpoint token
+            {t("gate.label")}
             <input
               type="text"
               value={token}
@@ -48,17 +49,16 @@ export function TokenGate({
           <div className="row">
             <button type="submit" className="btn btn-primary" disabled={busy || token.trim().length < 8}>
               {busy ? <span className="spin" aria-hidden="true" /> : null}
-              Unlock endpoint
+              {t("gate.unlock")}
             </button>
             <Link to="/" className="btn btn-ghost">
-              Create a new endpoint
+              {t("gate.create")}
             </Link>
           </div>
           {error ? <ErrorBanner message={error} /> : null}
         </form>
         <p className="tiny faint" style={{ margin: 0 }}>
-          Tokens are sent only to the HookLab API over HTTPS as an <code className="code-inline">x-hooklab-token</code>{" "}
-          header and are stored locally in this browser.
+          {t("gate.note")}
         </p>
       </div>
     </div>
@@ -66,12 +66,13 @@ export function TokenGate({
 }
 
 export function UrlField({ url }: { url: string }) {
+  const { t } = useI18n();
   return (
     <div className="copy-field">
-      <code className="code-block" aria-label="Endpoint URL">
+      <code className="code-block" aria-label={t("settings.ingestUrl")}>
         {url}
       </code>
-      <CopyButton value={url} label="Copy URL" />
+      <CopyButton value={url} label={t("common.copy")} testId="copy-url" />
     </div>
   );
 }

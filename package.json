@@ -14,8 +14,9 @@
     "db:local": "wrangler d1 execute hooklab-db --local --file=migrations/0001_init.sql",
     "dev:worker": "wrangler dev --local --persist-to .wrangler/state",
     "deploy": "npm run build && wrangler deploy",
-    "test": "node --test tests/ssrf.test.mjs tests/util.test.mjs",
-    "verify:ui": "node scripts/verify-ui.mjs"
+    "test": "node --test tests/ssrf.test.mjs tests/util.test.mjs tests/i18n.test.mjs",
+    "verify:ui": "node scripts/verify-ui.mjs",
+    "verify:narrow": "node scripts/check-narrow.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

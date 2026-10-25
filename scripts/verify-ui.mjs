@@ -95,13 +95,15 @@ const browser = await chromium.launch();
 async function newPage(contextOptions, seed) {
   const { endpoint, token } = seed;
   const context = await browser.newContext({ baseURL: BASE, ...contextOptions });
-  // Pre-seed the local session exactly like the app does after creation.
+  // Pre-seed the local session exactly like the app does after creation,
+  // and pin the UI language so assertions are deterministic.
   await context.addInitScript(
     ([id, tok, name]) => {
       localStorage.setItem(
         "hooklab.sessions.v1",
         JSON.stringify({ [id]: { id, token: tok, name, ingestUrl: `${location.origin}/h/${id}`, createdAt: Date.now() } }),
       );
+      if (!localStorage.getItem("hooklab.lang")) localStorage.setItem("hooklab.lang", "en");
     },
     [endpoint.id, token, endpoint.name],
   );
@@ -187,6 +189,59 @@ for (const vp of viewports) {
 
   const xLink = await page.getAttribute("a.x-link", "href");
   log(`[${vp.label}] X author link present in header`, xLink === "https://x.com/0xkillcoin", { href: xLink });
+
+  // ---------------------------------------------------------------- language
+  const langBtns = page.locator(".lang-toggle .lang-opt");
+  log(`[${vp.label}] language switch is present`, (await langBtns.count()) === 2, { count: await langBtns.count() });
+
+  const enHeading = await page.locator(".hero h1").innerText();
+  await page.locator('.lang-toggle .lang-opt[lang="zh-CN"]').click();
+  await page.waitForFunction(() => document.documentElement.getAttribute("data-lang") === "zh", null, { timeout: 8000 }).catch(() => {});
+  const zhHeading = await page.locator(".hero h1").innerText();
+  const zhHtmlLang = await page.evaluate(() => document.documentElement.lang);
+  const zhHref = await page.getAttribute("a.x-link", "href");
+  log(
+    `[${vp.label}] switch to Chinese translates the UI`,
+    /[\u4e00-\u9fff]/.test(zhHeading) && zhHtmlLang === "zh-CN" && zhHeading !== enHeading,
+    { enHeading: enHeading.slice(0, 40), zhHeading: zhHeading.slice(0, 40), htmlLang: zhHtmlLang },
+  );
+  log(`[${vp.label}] X author link survives the language switch`, zhHref === "https://x.com/0xkillcoin", { href: zhHref });
+
+  const zhOverflow = await overflowCheck(page);
+  log(`[${vp.label}] Chinese landing has no horizontal overflow`, zhOverflow.scrollWidth <= zhOverflow.docWidth + 1, zhOverflow);
+  await page.screenshot({ path: `${OUT}/${vp.label}-7-landing-zh.png`, fullPage: false });
+
+  // Chinese screenshots of the console pages (desktop only, to keep the run short).
+  if (vp.label === "desktop") {
+    await page.goto(`/e/${endpoint.id}`, { waitUntil: "networkidle" });
+    await page.waitForSelector(".inbox-row", { timeout: 15000 });
+    const zhInbox = await overflowCheck(page);
+    log(`[${vp.label}] Chinese inbox has no horizontal overflow`, zhInbox.scrollWidth <= zhInbox.docWidth + 1, zhInbox);
+    const zhNavLabels = await page.locator(".topnav .nav-label").allInnerTexts();
+    log(`[${vp.label}] Chinese nav labels are translated`, zhNavLabels.includes("收件箱"), { zhNavLabels });
+    await page.screenshot({ path: `${OUT}/${vp.label}-2-inbox-zh.png`, fullPage: false });
+
+    await page.goto(`/e/${endpoint.id}/r/${jsonRow.id}`, { waitUntil: "networkidle" });
+    await page.waitForSelector(".kv", { timeout: 15000 });
+    await page.screenshot({ path: `${OUT}/${vp.label}-3-request-detail-zh.png`, fullPage: false });
+
+    await page.goto(`/e/${endpoint.id}/replay/${jsonRow.id}`, { waitUntil: "networkidle" });
+    await page.screenshot({ path: `${OUT}/${vp.label}-4-replay-zh.png`, fullPage: false });
+
+    await page.goto("/", { waitUntil: "networkidle" });
+  }
+
+  const storedLang = await page.evaluate(() => localStorage.getItem("hooklab.lang"));
+  log(`[${vp.label}] language choice persists`, storedLang === "zh", { storedLang });
+
+  await page.reload({ waitUntil: "networkidle" });
+  const afterReload = await page.locator(".hero h1").innerText();
+  log(`[${vp.label}] language survives a reload`, /[\u4e00-\u9fff]/.test(afterReload), { heading: afterReload.slice(0, 40) });
+
+  await page.locator('.lang-toggle .lang-opt[lang="en"]').click();
+  await page.waitForFunction(() => document.documentElement.getAttribute("data-lang") === "en", null, { timeout: 8000 }).catch(() => {});
+  const backToEn = await page.locator(".hero h1").innerText();
+  log(`[${vp.label}] switch back to English works`, !/[\u4e00-\u9fff]/.test(backToEn), { heading: backToEn.slice(0, 40) });
 
   await page.goto(`/e/${endpoint.id}`, { waitUntil: "networkidle" });
   await page.waitForSelector(".inbox-row", { timeout: 15000 });
@@ -320,13 +375,13 @@ for (const vp of viewports) {
 
   // copy button
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {});
-  const copyBtn = page.locator('button[aria-label="Copy URL"], button:has-text("Copy URL")').first();
+  const copyBtn = page.locator('button[data-test="copy-url"]').first();
   await copyBtn.click();
   const copyLabel = await page
     .waitForFunction(
       () => {
-        const btn = [...document.querySelectorAll("button")].find((b) => /copy url/i.test(b.getAttribute("aria-label") || ""));
-        return btn && /copied|failed/i.test(btn.innerText) ? btn.innerText : null;
+        const btn = document.querySelector('button[data-test="copy-url"]');
+        return btn && /copied|failed|复制|失败/i.test(btn.innerText) ? btn.innerText : null;
       },
       null,
       { timeout: 5000 },

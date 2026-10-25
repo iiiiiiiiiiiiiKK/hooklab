@@ -106,6 +106,8 @@ Additional redirect-level checks (stage 4):
 | Delete | Modal → request removed from the inbox and from the server | ✅ |
 | Mobile bodies | Long bodies are scroll-contained (`max-height: 320px`, `overflow-y: auto`) | ✅ |
 | Console | Zero console/page errors at both viewports | ✅ |
+| Language switch | Header shows `EN / 中文`; switching translates the UI, sets `<html lang="zh-CN">`, keeps the 𝕏 link, and causes no layout overflow | ✅ |
+| Language persistence | Choice written to `localStorage["hooklab.lang"]` and still active after a full reload; switching back to English works | ✅ |
 
 Screenshots in [`screenshots/`](screenshots) are produced by this run. The settings screenshot has the live
 token masked in the DOM before capture.

@@ -15,11 +15,13 @@ import {
 } from "../components/ui";
 import { TokenGate } from "../components/TokenGate";
 import { decodeForm, formatBytes, formatDateTime, formatDuration, prettyJson } from "../format";
+import { useI18n } from "../i18n";
 
 type BodyView = "pretty" | "raw" | "fields";
 
 export default function RequestPage({ id, requestId }: { id: string; requestId: string }) {
   const toast = useToast();
+  const { t, locale, errorMessage } = useI18n();
   const { session, endpoint, loading, needsToken, attachToken } = useEndpoint(id);
   const [detail, setDetail] = useState<RequestDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +39,12 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
       setError(null);
     } catch (err) {
       setError(
-        err instanceof ApiError && err.status === 404
-          ? "This request is gone — it expired, was deleted, or belongs to another endpoint."
-          : err instanceof ApiError
-            ? err.message
-            : "Could not load this request.",
+        err instanceof ApiError && err.status === 404 ? t("request.gone") : errorMessage(err),
       );
     } finally {
       setBusy(false);
     }
-  }, [session, requestId]);
+  }, [session, requestId, t, errorMessage]);
 
   useEffect(() => {
     void load();
@@ -74,10 +72,10 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
     setDeleting(true);
     try {
       await api.deleteRequest(session.id, session.token, detail.id);
-      toast("Request deleted.", "success");
+      toast(t("request.deleted"), "success");
       navigate(`/e/${id}`);
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : "Delete failed.", "error");
+      toast(err instanceof ApiError ? errorMessage(err) : t("request.deleteFailed"), "error");
     } finally {
       setDeleting(false);
       setConfirmDelete(false);
@@ -87,7 +85,7 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
   if (loading || (busy && !detail)) {
     return (
       <div className="container">
-        <Loading label="Loading request…" />
+        <Loading label={t("request.loading")} />
       </div>
     );
   }
@@ -98,11 +96,11 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
     return (
       <div className="container">
         <div className="card stack">
-          <h1 className="endpoint-title">Request unavailable</h1>
-          <ErrorBanner message={error || "This request could not be loaded."} onRetry={() => void load()} />
+          <h1 className="endpoint-title">{t("request.unavailable")}</h1>
+          <ErrorBanner message={error || t("request.unavailableHint")} onRetry={() => void load()} />
           <div className="row">
             <Link to={`/e/${id}`} className="btn btn-ghost">
-              ← Back to inbox
+              {t("request.back")}
             </Link>
           </div>
         </div>
@@ -110,18 +108,15 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
     );
   }
 
-  const curl = buildCurl(detail, window.location.origin);
+  const curl = buildCurl(detail, window.location.origin, t("request.curlBinary"));
   const headersText = detail.headers.map(([k, v]) => `${k}: ${v}`).join("\n");
-  const bodyForCopy =
-    detail.bodyEncoding === "base64"
-      ? (detail.bodyBase64 ?? "")
-      : (detail.bodyText ?? "");
+  const bodyForCopy = detail.bodyEncoding === "base64" ? (detail.bodyBase64 ?? "") : (detail.bodyText ?? "");
 
   return (
     <div className="container stack" style={{ gap: 16 }}>
       <div className="row" style={{ gap: 8 }}>
         <Link to={`/e/${id}`} className="btn btn-sm btn-ghost">
-          ← Inbox
+          {t("request.back")}
         </Link>
         <span className="faint small">{endpoint?.name}</span>
       </div>
@@ -139,17 +134,21 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
               {detail.path}
             </h1>
             <p className="small faint" style={{ margin: "6px 0 0" }}>
-              {formatDateTime(detail.receivedAt)} · {formatBytes(detail.bodySize)}
-              {detail.clientCountry ? ` · from ${detail.clientCountry}` : ""}
+              {formatDateTime(detail.receivedAt, locale)} · {formatBytes(detail.bodySize)}
+              {detail.clientCountry ? ` · ${detail.clientCountry}` : ""}
               {detail.userAgent ? ` · ${detail.userAgent.slice(0, 60)}` : ""}
             </p>
           </div>
           <div className="row" style={{ gap: 6 }}>
-            <button type="button" className="btn btn-sm btn-primary" onClick={() => navigate(`/e/${id}/replay/${detail.id}`)}>
-              ↻ Replay
+            <button
+              type="button"
+              className="btn btn-sm btn-primary"
+              onClick={() => navigate(`/e/${id}/replay/${detail.id}`)}
+            >
+              {t("request.replay")}
             </button>
             <button type="button" className="btn btn-sm btn-danger" onClick={() => setConfirmDelete(true)}>
-              Delete
+              {t("common.delete")}
             </button>
           </div>
         </div>
@@ -158,9 +157,9 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
           <div className="banner banner-warn" role="status">
             <span aria-hidden="true">🔒</span>
             <div>
-              <strong>{detail.redactedHeaders.length} sensitive header(s) redacted:</strong>{" "}
+              <strong>{t("request.redactedTitle", { count: detail.redactedHeaders.length })}</strong>{" "}
               <code className="code-inline">{detail.redactedHeaders.join(", ")}</code>
-              {endpoint?.storeSensitiveHeaders ? " (values shown because this endpoint opted in)" : " — values were never stored."}
+              {endpoint?.storeSensitiveHeaders ? t("request.redactedOptIn") : t("request.redactedNever")}
             </div>
           </div>
         ) : null}
@@ -170,28 +169,40 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
         <div className="card stack" style={{ gap: 10 }}>
           <div className="row" style={{ justifyContent: "space-between" }}>
             <h2 className="card-title" style={{ margin: 0 }}>
-              Request body
+              {t("request.body")}
             </h2>
             <div className="row" style={{ gap: 6 }}>
               {json?.ok ? (
-                <button type="button" className={`btn btn-sm ${bodyView === "pretty" ? "btn-primary" : "btn-ghost"}`} onClick={() => setBodyView("pretty")}>
-                  Formatted
+                <button
+                  type="button"
+                  className={`btn btn-sm ${bodyView === "pretty" ? "btn-primary" : "btn-ghost"}`}
+                  onClick={() => setBodyView("pretty")}
+                >
+                  {t("request.formatted")}
                 </button>
               ) : null}
               {formFields ? (
-                <button type="button" className={`btn btn-sm ${bodyView === "fields" ? "btn-primary" : "btn-ghost"}`} onClick={() => setBodyView("fields")}>
-                  Fields
+                <button
+                  type="button"
+                  className={`btn btn-sm ${bodyView === "fields" ? "btn-primary" : "btn-ghost"}`}
+                  onClick={() => setBodyView("fields")}
+                >
+                  {t("request.fields")}
                 </button>
               ) : null}
-              <button type="button" className={`btn btn-sm ${bodyView === "raw" ? "btn-primary" : "btn-ghost"}`} onClick={() => setBodyView("raw")}>
-                Raw
+              <button
+                type="button"
+                className={`btn btn-sm ${bodyView === "raw" ? "btn-primary" : "btn-ghost"}`}
+                onClick={() => setBodyView("raw")}
+              >
+                {t("request.raw")}
               </button>
-              <CopyButton value={bodyForCopy} label="Copy body" />
+              <CopyButton value={bodyForCopy} label={t("request.copyBody")} />
             </div>
           </div>
 
           {detail.kind === "empty" || detail.bodySize === 0 ? (
-            <EmptyState icon="∅" title="Empty body" hint="This request was sent without a payload — common for GET/HEAD pings." />
+            <EmptyState icon="∅" title={t("request.emptyTitle")} hint={t("request.emptyHint")} />
           ) : bodyView === "pretty" && json?.ok ? (
             <pre className="code-block">{json.text}</pre>
           ) : bodyView === "fields" && formFields ? (
@@ -199,7 +210,7 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
               {formFields.map(([k, v], i) => (
                 <div key={`${k}-${i}`} style={{ display: "contents" }}>
                   <div>{k}</div>
-                  <div className="mono">{v || <span className="faint">(empty)</span>}</div>
+                  <div className="mono">{v || <span className="faint">{t("request.emptyField")}</span>}</div>
                 </div>
               ))}
             </div>
@@ -208,8 +219,8 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
               <div className="banner" role="status">
                 <span aria-hidden="true">◼</span>
                 <div>
-                  Binary payload — HookLab never renders unknown bytes as HTML. Showing a base64 transcript
-                  {detail.bodySha256 ? ` (SHA-256 ${detail.bodySha256.slice(0, 16)}…)` : ""}.
+                  {t("request.binaryNote")}
+                  {detail.bodySha256 ? ` (SHA-256 ${detail.bodySha256.slice(0, 16)}…)` : ""}
                 </div>
               </div>
               <pre className="code-block wrap">{detail.bodyBase64}</pre>
@@ -223,12 +234,12 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
           <div className="card stack" style={{ gap: 8 }}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <h2 className="card-title" style={{ margin: 0 }}>
-                Headers <span className="faint tiny">({detail.headers.length})</span>
+                {t("request.headers")} <span className="faint tiny">({detail.headers.length})</span>
               </h2>
-              <CopyButton value={headersText} label="Copy all" />
+              <CopyButton value={headersText} label={t("request.copyAll")} />
             </div>
             {detail.headers.length === 0 ? (
-              <p className="small faint">No headers captured.</p>
+              <p className="small faint">{t("request.noHeaders")}</p>
             ) : (
               <div className="kv">
                 {detail.headers.map(([k, v], i) => (
@@ -246,12 +257,14 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
           <div className="card stack" style={{ gap: 8 }}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <h2 className="card-title" style={{ margin: 0 }}>
-                Query parameters <span className="faint tiny">({detail.query.length})</span>
+                {t("request.query")} <span className="faint tiny">({detail.query.length})</span>
               </h2>
-              {detail.query.length > 0 ? <CopyButton value={JSON.stringify(Object.fromEntries(detail.query), null, 2)} label="Copy JSON" /> : null}
+              {detail.query.length > 0 ? (
+                <CopyButton value={JSON.stringify(Object.fromEntries(detail.query), null, 2)} label={t("request.copyJson")} />
+              ) : null}
             </div>
             {detail.query.length === 0 ? (
-              <p className="small faint">No query string on this request.</p>
+              <p className="small faint">{t("request.noQuery")}</p>
             ) : (
               <div className="kv">
                 {detail.query.map(([k, v], i) => (
@@ -267,21 +280,20 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
           <div className="card stack" style={{ gap: 8 }}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <h2 className="card-title" style={{ margin: 0 }}>
-                Replay as cURL
+                {t("request.curl")}
               </h2>
-              <CopyButton value={curl} label="Copy cURL" />
+              <CopyButton value={curl} label={t("request.copyCurl")} />
             </div>
             <pre className="code-block wrap">{curl}</pre>
             <p className="tiny faint" style={{ margin: 0 }}>
-              Redacted headers appear as <code className="code-inline">[REDACTED]</code> — replace them with real values
-              locally before running.
+              {t("request.curlNote")}
             </p>
           </div>
 
           {detail.replays.length > 0 ? (
             <div className="card stack" style={{ gap: 8 }}>
               <h2 className="card-title" style={{ margin: 0 }}>
-                Replay history
+                {t("request.replayHistory")}
               </h2>
               <div className="stack" style={{ gap: 6 }}>
                 {detail.replays.map((r) => (
@@ -301,9 +313,9 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
 
       <ConfirmModal
         open={confirmDelete}
-        title="Delete this request?"
-        body="The stored payload, headers and body are removed immediately and cannot be recovered."
-        confirmLabel="Delete request"
+        title={t("request.deleteTitle")}
+        body={t("request.deleteBody")}
+        confirmLabel={t("request.deleteConfirm")}
         danger
         busy={deleting}
         onCancel={() => setConfirmDelete(false)}
@@ -313,18 +325,35 @@ export default function RequestPage({ id, requestId }: { id: string; requestId: 
   );
 }
 
-function buildCurl(detail: RequestDetail, origin: string): string {
-  const url = `${origin}${detail.path}${detail.query.length ? `?${detail.query.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&")}` : ""}`;
+function buildCurl(detail: RequestDetail, origin: string, binaryNote: string): string {
+  const url = `${origin}${detail.path}${
+    detail.query.length
+      ? `?${detail.query.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&")}`
+      : ""
+  }`;
   const lines = [`curl -X ${detail.method} '${url}'`];
   for (const [k, v] of detail.headers) {
     const lower = k.toLowerCase();
-    if (["host", "content-length", "cf-connecting-ip", "cf-ray", "cf-ipcountry", "cdn-loop", "x-forwarded-proto", "x-forwarded-for", "x-real-ip"].includes(lower)) continue;
+    if (
+      [
+        "host",
+        "content-length",
+        "cf-connecting-ip",
+        "cf-ray",
+        "cf-ipcountry",
+        "cdn-loop",
+        "x-forwarded-proto",
+        "x-forwarded-for",
+        "x-real-ip",
+      ].includes(lower)
+    )
+      continue;
     lines.push(`  -H '${k}: ${String(v).replace(/'/g, "'\\''")}'`);
   }
   if (detail.bodySize > 0 && detail.bodyEncoding === "utf8" && detail.method !== "GET" && detail.method !== "HEAD") {
     lines.push(`  --data-raw '${(detail.bodyText || "").replace(/'/g, "'\\''")}'`);
   } else if (detail.bodyEncoding === "base64") {
-    lines.push("  # binary body omitted — use the Raw base64 transcript in the request body panel");
+    lines.push(`  ${binaryNote}`);
   }
   return lines.join(" \\\n");
 }

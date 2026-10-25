@@ -16,10 +16,26 @@
       content="Create a temporary webhook endpoint in one click, inspect every request, and replay it to a target you choose — with SSRF protection built in."
     />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta name="description" lang="zh-CN" content="HookLab 提供一个真实的公网 HTTPS 端点，捕获 webhook 与 API 请求，可查看请求头、请求体与查询参数，并安全地重放到指定目标。" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0f19'/%3E%3Cpath d='M20 24c0-4 3-7 7-7h10c4 0 7 3 7 7v16c0 4-3 7-7 7H27c-4 0-7-3-7-7z' fill='none' stroke='%238b5cf6' stroke-width='4'/%3E%3Cpath d='M26 32h12' stroke='%2322d3ee' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E"
     />
+    <script>
+      // Resolve the UI language before first paint so there is no flash of the wrong locale.
+      (function () {
+        try {
+          var saved = localStorage.getItem("hooklab.lang");
+          var lang = saved === "zh" || saved === "en" ? saved : /^zh\b/i.test(navigator.language || "") ? "zh" : "en";
+          document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+          document.documentElement.setAttribute("data-lang", lang);
+        } catch (e) {
+          /* storage blocked — the app falls back to navigator.language */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

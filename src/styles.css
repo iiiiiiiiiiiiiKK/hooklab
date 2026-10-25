@@ -18,6 +18,8 @@
   --radius-sm: 10px;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --sans-cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC",
+    "WenQuanYi Micro Hei", var(--sans);
 }
 
 * {
@@ -47,6 +49,21 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* Chinese text reads better with a CJK-first stack and slightly looser leading. */
+html[data-lang="zh"] body,
+[lang="zh-CN"] {
+  font-family: var(--sans-cjk);
+  line-height: 1.65;
+}
+
+html[data-lang="zh"] h1,
+html[data-lang="zh"] h2,
+html[data-lang="zh"] h3,
+html[data-lang="zh"] .endpoint-title,
+html[data-lang="zh"] .card-title {
+  letter-spacing: 0;
 }
 
 a {
@@ -176,6 +193,58 @@ a:hover {
   width: 15px;
   height: 15px;
   fill: currentColor;
+}
+
+/* ---------------------------------------------------------- language toggle */
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  flex: none;
+}
+
+.lang-opt {
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 12.2px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 5px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 32px;
+  min-width: 34px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lang-opt:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.lang-opt.active {
+  color: #0b0f19;
+  background: linear-gradient(120deg, #a78bfa, #22d3ee);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.32);
+}
+
+.lang-globe {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  color: var(--text-faint);
+}
+
+.globe-icon {
+  width: 14px;
+  height: 14px;
 }
 
 /* --------------------------------------------------------------- layout */
@@ -1224,6 +1293,38 @@ footer {
 
   .modal {
     padding: 16px;
+  }
+
+  /* Keep the header on one line: the language switch shrinks, the globe hides. */
+  .lang-globe {
+    display: none;
+  }
+
+  .lang-opt {
+    padding: 4px 7px;
+    font-size: 11.4px;
+    min-width: 30px;
+    min-height: 30px;
+  }
+}
+
+@media (max-width: 460px) {
+  /* Below this width the star link is the least valuable nav item. */
+  .topnav-link {
+    display: none !important;
+  }
+
+  .topbar-inner {
+    gap: 6px;
+  }
+
+  .topnav {
+    gap: 0;
+  }
+
+  .topnav a,
+  .topnav button {
+    padding: 7px 8px;
   }
 }
 

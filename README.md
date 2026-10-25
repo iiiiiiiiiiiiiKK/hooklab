@@ -43,6 +43,7 @@ explicitly type, with SSRF protection applied on every hop.
 - [API reference](#api-reference)
 - [Data retention rules](#data-retention-rules)
 - [Security model](#security-model)
+- [Internationalisation](#internationalisation)
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Project structure](#project-structure)
@@ -80,6 +81,10 @@ All screenshots are captured from the live production deployment by
 | Replay lab (desktop) | Landing (desktop) |
 | --- | --- |
 | ![Replay](screenshots/desktop-5-replay-result.png) | ![Landing](screenshots/desktop-1-landing.png) |
+
+| 中文 — 收件箱 | 中文 — 请求详情 | 中文 — 重放 |
+| --- | --- | --- |
+| ![中文收件箱](screenshots/desktop-2-inbox-zh.png) | ![中文请求详情](screenshots/desktop-3-request-detail-zh.png) | ![中文重放](screenshots/desktop-4-replay-zh.png) |
 
 | iPhone — inbox | iPhone — request detail | iPhone — replay |
 | --- | --- | --- |
@@ -121,6 +126,13 @@ All screenshots are captured from the live production deployment by
 - **Deletion**: delete one request, purge all requests, rotate the token, or destroy the endpoint.
 - **Sanitised export**: download a JSON debug report with sensitive headers already redacted.
 - **Token rotation** invalidates the previous token instantly (only a SHA-256 hash is ever stored).
+
+### Interface
+- **Bilingual UI — English / 中文**, switchable from the header (`EN | 中文`). The choice is remembered in
+  `localStorage`, applied to `<html lang>` before first paint (no flash of the wrong locale), and also drives
+  date/number/relative-time formatting via `Intl`. First visit auto-detects the browser language.
+- **Responsive from 320 px up**: single-column inbox on phones, icon-only nav, scroll-contained long bodies,
+  ≥ 28 px tap targets. Verified on an emulated iPhone viewport in CI-grade browser tests.
 
 ## Architecture
 
@@ -356,19 +368,26 @@ account. If you need team accounts, put it behind your own auth proxy or add the
 ## Testing
 
 ```bash
-npm test                  # unit tests (node:test): SSRF, token/body handling, redaction
-node scripts/verify-ui.mjs  # browser E2E + screenshots against a deployed instance
+npm test                     # unit tests (node:test): SSRF, token/body handling, redaction, i18n
+node scripts/verify-ui.mjs   # browser E2E + screenshots against a deployed instance
+node scripts/check-narrow.mjs # 320px narrow-phone regression in both languages
 ```
 
 Unit coverage (`tests/`):
 
 - `ssrf.test.mjs` — IPv4/IPv6 parsing, blocked ranges, schemes, ports, allow-list, metadata hosts.
 - `util.test.mjs` — token/slug entropy, hashing, header redaction, body classification, streaming byte cap.
+- `i18n.test.mjs` — both locales define identical message keys, no empty strings, every `{placeholder}` in
+  English is present in Chinese, and every error code the client can surface has a translated message.
 
 End-to-end verification (`scripts/verify-ui.mjs`) drives the **live deployment** in Chromium at 1440×900 and
 iPhone 390×844 (DPR 3, touch) and asserts: no horizontal overflow on any page, tap targets ≥ 28 px, nav
 collapse, search/filter behaviour, copy feedback, redaction visible in the UI, SSRF rejection surfaced in the
-UI, real replay rendering, and request deletion. It writes screenshots plus `screenshots/ui-verification.json`.
+UI, real replay rendering, request deletion, and the language switch (translate → reload → persist → switch back).
+It writes screenshots (including Chinese variants) plus `screenshots/ui-verification.json`.
+
+`scripts/check-narrow.mjs` repeats the layout assertions at 320 px wide in both languages, where the header is
+the tightest element.
 
 Production verification results for this repository are recorded in [VERIFICATION.md](VERIFICATION.md),
 including the edge-run API suite (capture, limits, auth, SSRF, replay, export, deletion) executed from a
@@ -419,6 +438,7 @@ with an alternate data layer.
 hooklab/
 ├── src/                     # React 19 + TypeScript SPA
 │   ├── api.ts               # typed API client + error model
+│   ├── i18n.tsx             # EN/ZH dictionaries, provider, useI18n(), error localisation
 │   ├── hooks.ts             # endpoint session + polling hooks
 │   ├── router.tsx           # 3 KB history router
 │   ├── components/          # UI primitives (toasts, chips, modals, token gate)
@@ -433,10 +453,31 @@ hooklab/
 ├── tests/                   # node:test unit tests (+ edge probe used for verification)
 ├── scripts/
 │   ├── verify-ui.mjs        # Playwright E2E + screenshot pipeline
+│   ├── check-narrow.mjs     # 320px regression in both languages
 │   └── push-to-github.mjs   # REST-API publisher (fallback when git push is blocked)
 ├── .github/workflows/ci.yml # type check, unit tests, build, worker dry-run
 └── wrangler.jsonc           # Worker, assets, D1 bindings and the cleanup cron
 ```
+
+## Internationalisation
+
+The UI ships in **English and Chinese**. `src/i18n.tsx` holds both dictionaries as one typed table, so a missing
+key is a TypeScript error and a missing translation is caught by `tests/i18n.test.mjs`.
+
+- The switch lives in the header (`EN | 中文`) and is a two-button segmented control, not a dropdown — one tap,
+  no menu to open on a phone.
+- The choice is stored in `localStorage["hooklab.lang"]`; a tiny inline script in `index.html` applies it to
+  `<html lang>` **before first paint**, so there is no flash of the wrong language.
+- First visit falls back to `navigator.language` (`zh*` → Chinese, everything else → English).
+- `Intl` formatting follows the active language: dates, times and relative timestamps are rendered with
+  `en-US` / `zh-CN` rather than mixed.
+- Server error codes are mapped to translated sentences (`err.<code>`), so a `blocked_target` failure reads
+  naturally in Chinese instead of leaking English API text. Unknown codes fall back to the server message.
+- Chinese text uses a CJK-first font stack and slightly looser line-height; English headings keep their tighter
+  tracking.
+
+Adding a language: add a `Lang` member, a dictionary typed as `Record<TextKey, string>`, and an entry in
+`LOCALES` — the compiler lists every key you still need to translate.
 
 ## Known limitations
 
