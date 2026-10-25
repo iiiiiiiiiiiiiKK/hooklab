@@ -24,7 +24,7 @@ explicitly type, with SSRF protection applied on every hop.
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=0b0f19" />
   <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=white" />
   <img alt="D1" src="https://img.shields.io/badge/D1-SQLite-003b57?logo=sqlite&logoColor=white" />
-  <img alt="Tests" src="https://img.shields.io/badge/tests-24%20unit%20%C2%B7%2061%20browser%20%C2%B7%2050%20edge-8b5cf6" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-34%20unit%20%C2%B7%2061%20browser%20%C2%B7%2050%20edge-8b5cf6" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-8b5cf6" />
 </p>
 
