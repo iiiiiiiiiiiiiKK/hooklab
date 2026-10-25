@@ -1,0 +1,8 @@
+{
+  "name": "hooklab-probe",
+  "main": "index.js",
+  "compatibility_date": "2025-09-01",
+  "vars": {
+    "HOOKLAB_BASE": "https://hooklab.852367856.dpdns.org"
+  }
+}

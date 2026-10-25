@@ -1,0 +1,33 @@
+{
+  "name": "hooklab",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "HookLab - a webhook lab for developers: capture, inspect, replay and share HTTP requests.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:ui": "vite build",
+    "preview": "vite preview",
+    "worker:build": "wrangler deploy --dry-run --outdir .worker-build",
+    "db:local": "wrangler d1 execute hooklab-db --local --file=migrations/0001_init.sql",
+    "dev:worker": "wrangler dev --local --persist-to .wrangler/state",
+    "deploy": "npm run build && wrangler deploy",
+    "test": "node --test tests/",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "wrangler": "^4.151.3"
+  }
+}

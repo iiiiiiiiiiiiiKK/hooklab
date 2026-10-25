@@ -1,0 +1,351 @@
+{
+  "base": "https://hooklab.852367856.dpdns.org",
+  "passed": 45,
+  "total": 45,
+  "results": [
+    {
+      "name": "[desktop] seed data captured",
+      "ok": true,
+      "detail": {
+        "count": 4
+      }
+    },
+    {
+      "name": "[desktop] landing has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] X author link present in header",
+      "ok": true,
+      "detail": {
+        "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[desktop] inbox has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] inbox renders captured requests",
+      "ok": true,
+      "detail": {
+        "rowCount": 4
+      }
+    },
+    {
+      "name": "[desktop] captured vs synthetic labelled",
+      "ok": true,
+      "detail": {
+        "capturedChip": 4,
+        "syntheticChip": 1
+      }
+    },
+    {
+      "name": "[desktop] request detail has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] redacted header is visible in the UI",
+      "ok": true,
+      "detail": {
+        "redactedVisible": 4
+      }
+    },
+    {
+      "name": "[desktop] JSON body rendered formatted",
+      "ok": true,
+      "detail": {
+        "chars": 152
+      }
+    },
+    {
+      "name": "[desktop] SSRF target rejected in the UI",
+      "ok": true,
+      "detail": {
+        "banner": "⚠\nTarget host \"127.0.0.1\" is a private, loopback or reserved address. (blocked_target)"
+      }
+    },
+    {
+      "name": "[desktop] replay page has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] replay result rendered",
+      "ok": true,
+      "detail": {
+        "hasResult": 1
+      }
+    },
+    {
+      "name": "[desktop] settings has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 1440,
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[desktop] inbox search filters the list",
+      "ok": true,
+      "detail": {
+        "beforeSearch": 4,
+        "afterSearch": 1
+      }
+    },
+    {
+      "name": "[desktop] empty search state shown",
+      "ok": true,
+      "detail": {
+        "emptyShown": "No requests match these filters"
+      }
+    },
+    {
+      "name": "[desktop] origin filter isolates synthetic requests",
+      "ok": true,
+      "detail": {
+        "synthRows": 1,
+        "synthOnly": 1
+      }
+    },
+    {
+      "name": "[desktop] copy URL gives feedback",
+      "ok": true,
+      "detail": {
+        "copyLabel": "✓\nCopied"
+      }
+    },
+    {
+      "name": "[desktop] copied value is the ingest URL",
+      "ok": true,
+      "detail": {
+        "sample": "https://hooklab.852367856.dpdns.org/h/Wh1oIRLayk"
+      }
+    },
+    {
+      "name": "[desktop] deleting a request returns to the inbox",
+      "ok": true,
+      "detail": {
+        "path": "/e/9b4e2205-8cde-4176-bd63-b3b5a3bfc34f"
+      }
+    },
+    {
+      "name": "[desktop] deleted request is gone server-side",
+      "ok": true,
+      "detail": {
+        "remaining": 3
+      }
+    },
+    {
+      "name": "[desktop] no console errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "[iphone] seed data captured",
+      "ok": true,
+      "detail": {
+        "count": 4
+      }
+    },
+    {
+      "name": "[iphone] landing has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] X author link present in header",
+      "ok": true,
+      "detail": {
+        "href": "https://x.com/0xkillcoin"
+      }
+    },
+    {
+      "name": "[iphone] inbox has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] inbox renders captured requests",
+      "ok": true,
+      "detail": {
+        "rowCount": 4
+      }
+    },
+    {
+      "name": "[iphone] captured vs synthetic labelled",
+      "ok": true,
+      "detail": {
+        "capturedChip": 4,
+        "syntheticChip": 1
+      }
+    },
+    {
+      "name": "[iphone] request detail has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] redacted header is visible in the UI",
+      "ok": true,
+      "detail": {
+        "redactedVisible": 4
+      }
+    },
+    {
+      "name": "[iphone] JSON body rendered formatted",
+      "ok": true,
+      "detail": {
+        "chars": 152
+      }
+    },
+    {
+      "name": "[iphone] SSRF target rejected in the UI",
+      "ok": true,
+      "detail": {
+        "banner": "⚠\nTarget host \"127.0.0.1\" is a private, loopback or reserved address. (blocked_target)"
+      }
+    },
+    {
+      "name": "[iphone] replay page has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] replay result rendered",
+      "ok": true,
+      "detail": {
+        "hasResult": 1
+      }
+    },
+    {
+      "name": "[iphone] settings has no horizontal overflow",
+      "ok": true,
+      "detail": {
+        "docWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "offenders": []
+      }
+    },
+    {
+      "name": "[iphone] all tap targets >= 28px tall",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "[iphone] top nav collapses to icons",
+      "ok": true
+    },
+    {
+      "name": "[iphone] long bodies are scroll-contained",
+      "ok": true,
+      "detail": {
+        "maxHeight": "320px",
+        "overflowY": "auto",
+        "scrolls": false
+      }
+    },
+    {
+      "name": "[iphone] inbox search filters the list",
+      "ok": true,
+      "detail": {
+        "beforeSearch": 4,
+        "afterSearch": 1
+      }
+    },
+    {
+      "name": "[iphone] empty search state shown",
+      "ok": true,
+      "detail": {
+        "emptyShown": "No requests match these filters"
+      }
+    },
+    {
+      "name": "[iphone] origin filter isolates synthetic requests",
+      "ok": true,
+      "detail": {
+        "synthRows": 1,
+        "synthOnly": 1
+      }
+    },
+    {
+      "name": "[iphone] copy URL gives feedback",
+      "ok": true,
+      "detail": {
+        "copyLabel": "✓\nCopied"
+      }
+    },
+    {
+      "name": "[iphone] copied value is the ingest URL",
+      "ok": true,
+      "detail": {
+        "sample": "https://hooklab.852367856.dpdns.org/h/1JBNRt-Plg"
+      }
+    },
+    {
+      "name": "[iphone] deleting a request returns to the inbox",
+      "ok": true,
+      "detail": {
+        "path": "/e/e4212bb0-7789-4be8-a72f-9c032a9ddd0c"
+      }
+    },
+    {
+      "name": "[iphone] deleted request is gone server-side",
+      "ok": true,
+      "detail": {
+        "remaining": 3
+      }
+    },
+    {
+      "name": "[iphone] no console errors",
+      "ok": true,
+      "detail": []
+    }
+  ]
+}
